@@ -82,6 +82,9 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private JLabel memLabel = new JLabel("    ");
   private JLabel countLabel = new JLabel("    ", JLabel.CENTER);
   private transient ElementCounter elementCounter = new ElementCounter();
+  private JLabel selectionLabel = new JLabel(ElementSelect.NO_SELECTION,
+    JLabel.CENTER);
+  private transient ElementSelect elementSelect = new ElementSelect();
   private UmlModel umlModel;
   private DiagramEditor currentEditor;
   private transient Timer timer = new Timer();
@@ -216,6 +219,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
       }
     });
     updateElementCount();
+    updateSelectionInfo();
   }
 
   /**
@@ -244,7 +248,10 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private void installStatusbar() {
     JPanel statusbar = new JPanel(new BorderLayout());
     statusbar.add(coordLabel, BorderLayout.WEST);
-    statusbar.add(countLabel, BorderLayout.CENTER);
+    JPanel infoPanel = new JPanel(new java.awt.GridLayout(1, 2));
+    infoPanel.add(countLabel);
+    infoPanel.add(selectionLabel);
+    statusbar.add(infoPanel, BorderLayout.CENTER);
     statusbar.add(memLabel, BorderLayout.EAST);
     getContentPane().add(statusbar, BorderLayout.SOUTH);
   }
@@ -300,6 +307,15 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     updateElementCount();
   }
 
+  private void updateSelectionInfo() {
+    if (elementSelect == null) {
+      elementSelect = new ElementSelect();
+    }
+    DiagramEditor editor = getCurrentEditor();
+    selectionLabel.setText(elementSelect.describe(
+      editor == null ? null : editor.getSelectedElements()));
+  }
+
   private void updateElementCount() {
     if (elementCounter == null) {
       elementCounter = new ElementCounter();
@@ -329,6 +345,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void selectionStateChanged() {
+    updateSelectionInfo();
     boolean hasSelection = getCurrentEditor().getSelectedElements().size() > 0;
    
     menumanager.enableMenuItem("CUT", hasSelection);
