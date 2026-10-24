@@ -41,6 +41,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -204,9 +205,12 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
    * This also influences the scroll pane which the component is contained in.
    */
   private void setToDiagramSize() {
+    double scaleFactor = scaling == null ? 1.0 : scaling.getScaleFactor();
     setPreferredSize(new Dimension(
-      (int) (diagram.getSize().getWidth() + MARGIN_RIGHT + MARGIN_LEFT),
-      (int) (diagram.getSize().getHeight() + MARGIN_BOTTOM + MARGIN_TOP)));
+      (int) ((diagram.getSize().getWidth() + MARGIN_RIGHT + MARGIN_LEFT)
+        * scaleFactor),
+      (int) ((diagram.getSize().getHeight() + MARGIN_BOTTOM + MARGIN_TOP)
+        * scaleFactor)));
     invalidate();
   }
 
@@ -251,6 +255,15 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
    */
   public void deleteSelection() {
     Collection<DiagramElement> elements = getSelectedElements();
+    if (elements.size() > 1) {
+      int answer = JOptionPane.showConfirmDialog(frame,
+        "Delete " + elements.size() + " selected elements?",
+        "Confirm deletion", JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE);
+      if (answer != JOptionPane.YES_OPTION) {
+        return;
+      }
+    }
     execute(new DeleteElementCommand(this, elements));
   }
   /**
@@ -271,9 +284,9 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
 		clonedElements.put(elem, copia);
 	}
 	
-	// hasta aquí tengo el hash de cada objeto con su clon (del nuevo diagrama)
+	// hasta aquï¿½ tengo el hash de cada objeto con su clon (del nuevo diagrama)
 	// ahora debo iterar por cada Connection en elements y rehacer sus conexiones
-	// tomaré el ejemplo desde PasteElementCommand.
+	// tomarï¿½ el ejemplo desde PasteElementCommand.
 	for(DiagramElement elem : elements){
 		if(elem instanceof Connection){
 			Connection currentConnection = (Connection)elem;
@@ -593,7 +606,31 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
    */
   public void setScaling(Scaling aScaling) {
     scaling = aScaling;
+    setToDiagramSize();
     repaint();
+  }
+
+  /**
+   * Fits the diagram inside the visible editor area without changing any
+   * element coordinates or dimensions.
+   */
+  public void fitToWindow() {
+    Dimension canvasSize = getTotalCanvasSize();
+    Rectangle visible = getVisibleRect();
+    int availableWidth = visible.width > 0 ? visible.width : getWidth();
+    int availableHeight = visible.height > 0 ? visible.height : getHeight();
+    if (availableWidth <= 0) {
+      availableWidth = canvasSize.width;
+    }
+    if (availableHeight <= 0) {
+      availableHeight = canvasSize.height;
+    }
+    double scaleFactor = Math.min(
+      (double) availableWidth / canvasSize.width,
+      (double) availableHeight / canvasSize.height);
+    scaleFactor = Math.max(0.1, Math.min(1.0, scaleFactor));
+    setScaling(Scaling.create(scaleFactor));
+    scrollRectToVisible(new Rectangle(0, 0, 1, 1));
   }
 
   /**

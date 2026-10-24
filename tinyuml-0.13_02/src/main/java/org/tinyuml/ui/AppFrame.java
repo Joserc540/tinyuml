@@ -84,6 +84,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private transient ElementCounter elementCounter = new ElementCounter();
   private JLabel selectionLabel = new JLabel(ElementSelect.NO_SELECTION,
     JLabel.CENTER);
+  private JLabel selectedCountLabel = new JLabel("Selected: 0", JLabel.CENTER);
   private transient ElementSelect elementSelect = new ElementSelect();
   private UmlModel umlModel;
   private DiagramEditor currentEditor;
@@ -248,9 +249,10 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private void installStatusbar() {
     JPanel statusbar = new JPanel(new BorderLayout());
     statusbar.add(coordLabel, BorderLayout.WEST);
-    JPanel infoPanel = new JPanel(new java.awt.GridLayout(1, 2));
+    JPanel infoPanel = new JPanel(new java.awt.GridLayout(1, 3));
     infoPanel.add(countLabel);
     infoPanel.add(selectionLabel);
+    infoPanel.add(selectedCountLabel);
     statusbar.add(infoPanel, BorderLayout.CENTER);
     statusbar.add(memLabel, BorderLayout.EAST);
     getContentPane().add(statusbar, BorderLayout.SOUTH);
@@ -312,8 +314,11 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
       elementSelect = new ElementSelect();
     }
     DiagramEditor editor = getCurrentEditor();
-    selectionLabel.setText(elementSelect.describe(
-      editor == null ? null : editor.getSelectedElements()));
+    java.util.List<DiagramElement> selected =
+      editor == null ? null : editor.getSelectedElements();
+    selectionLabel.setText(elementSelect.describe(selected));
+    selectedCountLabel.setText(String.format("Selected: %d",
+      selected == null ? 0 : selected.size()));
   }
 
   private void updateElementCount() {
