@@ -80,6 +80,8 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private JTabbedPane tabbedPane;
   private JLabel coordLabel = new JLabel("    ");
   private JLabel memLabel = new JLabel("    ");
+  private JLabel countLabel = new JLabel("    ", JLabel.CENTER);
+  private transient ElementCounter elementCounter = new ElementCounter();
   private UmlModel umlModel;
   private DiagramEditor currentEditor;
   private transient Timer timer = new Timer();
@@ -213,6 +215,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
                               label.getText());
       }
     });
+    updateElementCount();
   }
 
   /**
@@ -241,6 +244,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private void installStatusbar() {
     JPanel statusbar = new JPanel(new BorderLayout());
     statusbar.add(coordLabel, BorderLayout.WEST);
+    statusbar.add(countLabel, BorderLayout.CENTER);
     statusbar.add(memLabel, BorderLayout.EAST);
     getContentPane().add(statusbar, BorderLayout.SOUTH);
   }
@@ -275,6 +279,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    */
   public void stateChanged(DiagramEditor editor) {
     updateMenuAndToolbars(editor);
+    updateElementCount();
   }
 
   /**
@@ -284,6 +289,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     // spring loading is implemented here
     staticToolbarManager.doClick("SELECT_MODE");
     updateMenuAndToolbars(editor);
+    updateElementCount();
   }
 
   /**
@@ -291,6 +297,16 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    */
   public void elementRemoved(DiagramEditor editor) {
     updateMenuAndToolbars(editor);
+    updateElementCount();
+  }
+
+  private void updateElementCount() {
+    if (elementCounter == null) {
+      elementCounter = new ElementCounter();
+    }
+    DiagramEditor editor = getCurrentEditor();
+    elementCounter.count(editor == null ? null : editor.getDiagram());
+    countLabel.setText(elementCounter.getSummary());
   }
 
   /**
@@ -629,7 +645,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
 	  if(hasSelection)
 	    lastCopiedElements = getCurrentEditor().getSelectedElements();
 
-	  //adicionalmente, hay que habilitar el botón PASTE!
+	  //adicionalmente, hay que habilitar el botï¿½n PASTE!
 	  menumanager.enableMenuItem("PASTE", hasSelection);
 	  toolbarmanager.enableButton("PASTE", hasSelection);
   }
