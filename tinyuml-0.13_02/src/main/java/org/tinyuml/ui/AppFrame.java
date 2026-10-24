@@ -288,7 +288,9 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    */
   public void stateChanged(DiagramEditor editor) {
     updateMenuAndToolbars(editor);
-    updateElementCount();
+    // No se recuenta aqui: stateChanged se dispara al mover, redimensionar o
+    // editar conexiones, y eso no cambia la cantidad de elementos. El conteo
+    // se actualiza en elementAdded/elementRemoved (tambien en undo/redo).
   }
 
   /**

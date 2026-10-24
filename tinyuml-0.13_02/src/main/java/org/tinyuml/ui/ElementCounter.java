@@ -1,5 +1,8 @@
 package org.tinyuml.ui;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import org.tinyuml.draw.AbstractCompositeNode;
 import org.tinyuml.draw.Connection;
 import org.tinyuml.draw.DiagramElement;
@@ -9,7 +12,11 @@ import org.tinyuml.umldraw.structure.ComponentElement;
 import org.tinyuml.umldraw.structure.PackageElement;
 import org.tinyuml.umldraw.structure.StructureDiagram;
 
-
+/**
+ * Implementa el RF-001: cuenta los elementos de un diagrama por categoria
+ * (Package, Class, Component y Note) y arma el texto de la barra de estado.
+ * Las relaciones entre elementos no se cuentan.
+ */
 public class ElementCounter {
 
   private int packages;
@@ -31,27 +38,29 @@ public class ElementCounter {
     }
   }
 
-  /**
-   * Recorrido recursivo: tambien cuenta elementos anidados (ej. dentro
-   * de un Package). Las conexiones (asociaciones, herencias) no se cuentan.
-   * @param parent nodo contenedor
-   */
-  private void countChildren(AbstractCompositeNode parent) {
-    for (DiagramElement element : parent.getChildren()) {
-      if (element instanceof Connection) {
-        continue;
-      }
-      if (element instanceof PackageElement) {
-        packages++;
-      } else if (element instanceof ClassElement) {
-        classes++;
-      } else if (element instanceof ComponentElement) {
-        components++;
-      } else if (element instanceof NoteElement) {
-        notes++;
-      }
-      if (element instanceof AbstractCompositeNode) {
-        countChildren((AbstractCompositeNode) element);
+
+  private void countChildren(AbstractCompositeNode root) {
+    Deque<AbstractCompositeNode> pending =
+      new ArrayDeque<AbstractCompositeNode>();
+    pending.push(root);
+    while (!pending.isEmpty()) {
+      AbstractCompositeNode parent = pending.pop();
+      for (DiagramElement element : parent.getChildren()) {
+        if (element instanceof Connection) {
+          continue;
+        }
+        if (element instanceof PackageElement) {
+          packages++;
+        } else if (element instanceof ClassElement) {
+          classes++;
+        } else if (element instanceof ComponentElement) {
+          components++;
+        } else if (element instanceof NoteElement) {
+          notes++;
+        }
+        if (element instanceof AbstractCompositeNode) {
+          pending.push((AbstractCompositeNode) element);
+        }
       }
     }
   }

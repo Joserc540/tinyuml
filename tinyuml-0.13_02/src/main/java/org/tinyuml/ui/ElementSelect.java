@@ -14,7 +14,7 @@ import org.tinyuml.umldraw.structure.PackageElement;
 
 public class ElementSelect {
 
-  static final String NO_SELECTION = "Sin seleccion";
+  static final String NO_SELECTION = "Sin selecci\u00f3n";
   private static final int MAX_NAME_LENGTH = 30;
 
   /**
@@ -27,9 +27,9 @@ public class ElementSelect {
       return NO_SELECTION;
     }
     DiagramElement first = selected.get(0);
-    String text = "Seleccion: " + categoryOf(first) + " - " + nameOf(first); 
+    String text = "Selecci\u00f3n: " + categoryOf(first) + " - " + nameOf(first); 
     if (selected.size() > 1) {
-      text += " (+" + (selected.size() - 1) + " más)";
+      text += " (+" + (selected.size() - 1) + " m\u00e1s)";
     }
     return text;
   }
